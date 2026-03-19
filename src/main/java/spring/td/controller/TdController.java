@@ -23,4 +23,17 @@ public class TdController {
                 .map(studentEntity -> studentEntity.getFirstName() + " " + studentEntity.getLastName())
                 .collect(Collectors.joining(", "));
     }
+
+    @GetMapping("/students")
+    String getStudents(@RequestHeader(value = "Accept", defaultValue = "text/plain") String accept) {
+        System.out.println(accept);
+        if (!accept.equals("text/plain")) {
+            return "Format non supporté";
+        }
+
+        return studentsList
+                .stream()
+                .map(studentEntity -> studentEntity.getFirstName() + " " + studentEntity.getLastName())
+                .collect(Collectors.joining(", "));
+    }
 }
