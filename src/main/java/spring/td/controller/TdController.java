@@ -6,7 +6,6 @@ import spring.td.entity.StudentEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 public class TdController {
@@ -39,15 +38,26 @@ public class TdController {
     }
 
     @GetMapping("/students")
-    String getStudents(@RequestHeader(value = "Accept", defaultValue = "text/plain") String accept) {
-        System.out.println(accept);
-        if (!accept.equals("text/plain")) {
-            return "Format non supporté";
-        }
+    ResponseEntity<?> getStudents(@RequestHeader(required = false) String accept) {
+        try {
+            if (accept == null || accept.isEmpty()) {
+                return ResponseEntity
+                        .status(400)
+                        .body("Missing Accept header");
+            }
 
-        return studentsList
-                .stream()
-                .map(studentEntity -> studentEntity.getFirstName() + " " + studentEntity.getLastName())
-                .collect(Collectors.joining(", "));
+            if (accept.equals("text/plain") || accept.equals("application/json")) {
+                return ResponseEntity
+                        .status(200)
+                        .body(studentsList);
+            }
+            return ResponseEntity
+                    .status(501)
+                    .body("Invalid Accept header");
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(500)
+                    .body("Internal server error: " + e.getMessage());
+        }
     }
 }
