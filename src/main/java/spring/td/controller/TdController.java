@@ -24,12 +24,18 @@ public class TdController {
 
     List<StudentEntity> studentsList = new ArrayList<>();
     @PostMapping("/students")
-    String saveStudents(@RequestBody List<StudentEntity> newStudents) {
-        studentsList.addAll(newStudents);
-        return studentsList
-                .stream()
-                .map(studentEntity -> studentEntity.getFirstName() + " " + studentEntity.getLastName())
-                .collect(Collectors.joining(", "));
+    ResponseEntity<?> saveStudents(@RequestBody List<StudentEntity> newStudents) {
+        try {
+            studentsList.addAll(newStudents);
+
+            return ResponseEntity
+                    .status(201)
+                    .body(studentsList);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(500)
+                    .body("Internal server error");
+        }
     }
 
     @GetMapping("/students")
