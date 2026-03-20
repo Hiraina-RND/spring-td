@@ -1,5 +1,6 @@
 package spring.td.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import spring.td.entity.StudentEntity;
 
@@ -10,8 +11,15 @@ import java.util.stream.Collectors;
 @RestController
 public class TdController {
     @GetMapping("/welcome")
-    String sayWelcome(@RequestParam String name) {
-        return "Welcome " + name;
+    ResponseEntity<String> sayWelcome(@RequestParam(required = false) String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return ResponseEntity
+                    .status(400)
+                    .body("Parameter 'name' is required and must not be empty");
+        }
+        return ResponseEntity
+                .status(200)
+                .body("Welcome " + name);
     }
 
     List<StudentEntity> studentsList = new ArrayList<>();
