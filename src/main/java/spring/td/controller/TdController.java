@@ -33,7 +33,7 @@ public class TdController {
         } catch (Exception e) {
             return ResponseEntity
                     .status(500)
-                    .body("Internal server error");
+                    .body("Internal server error: " + e.getMessage());
         }
     }
 
