@@ -26,42 +26,41 @@ public class TdController {
     ResponseEntity<String> sayWelcome(@RequestParam(required = false) String name) {
         try {
             tdValidator.validateName(name);
-            return ResponseEntity
-                    .status(200)
-                    .body("Welcome " + name);
         } catch (BadRequestException e) {
             return ResponseEntity
                     .status(400)
                     .body(e.getMessage());
         }
+        return ResponseEntity
+                .status(200)
+                .body("Welcome " + name);
     }
 
     @PostMapping("/students")
     ResponseEntity<?> saveStudents(@RequestBody List<StudentEntity> newStudents) {
         try {
             tdValidator.validateStudents(newStudents);
-
-            return ResponseEntity
-                    .status(201)
-                    .body(tdService.saveStudents(newStudents));
         } catch (BadRequestException e) {
             return ResponseEntity
                     .status(400)
                     .body(e.getMessage());
         }
+        return ResponseEntity
+                .status(201)
+                .body(tdService.saveStudents(newStudents));
     }
 
     @GetMapping(value = "/students", produces = {"application/json", "text/plain"})
     ResponseEntity<?> getStudents(@RequestHeader(required = false) String accept) {
         try {
             tdValidator.validateAcceptHeader(accept);
-            return ResponseEntity
-                    .status(200)
-                    .body(tdService.getStudents());
         } catch (BadRequestException e) {
             return ResponseEntity
                     .status(400)
                     .body(e.getMessage());
         }
+        return ResponseEntity
+                .status(200)
+                .body(tdService.getStudents());
     }
 }
