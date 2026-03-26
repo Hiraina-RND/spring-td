@@ -1,63 +1,67 @@
 package spring.td.controller;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import spring.td.entity.StudentEntity;
+import spring.td.service.TdService;
+import spring.td.validator.TdValidator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class TdController {
-    @GetMapping("/welcome")
-    ResponseEntity<String> sayWelcome(@RequestParam(required = false) String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return ResponseEntity
-                    .status(400)
-                    .body("Parameter 'name' is required and must not be empty");
-        }
-        return ResponseEntity
-                .status(200)
-                .body("Welcome " + name);
+    private final TdService tdService;
+    private final TdValidator tdValidator;
+
+    public TdController(
+            TdService studentService,
+            TdValidator tdValidator, TdService tdService
+    ) {
+        this.tdService = tdService;
+        this.tdValidator = tdValidator;
     }
 
-    List<StudentEntity> studentsList = new ArrayList<>();
+    @GetMapping("/welcome")
+    ResponseEntity<String> sayWelcome(@RequestParam(required = false) String name) {
+        try {
+            tdValidator.validateName(name);
+            return ResponseEntity
+                    .status(200)
+                    .body("Welcome " + name);
+        } catch (BadRequestException e) {
+            return ResponseEntity
+                    .status(400)
+                    .body(e.getMessage());
+        }
+    }
+
     @PostMapping("/students")
     ResponseEntity<?> saveStudents(@RequestBody List<StudentEntity> newStudents) {
         try {
-            studentsList.addAll(newStudents);
+            tdValidator.validateStudents(newStudents);
 
             return ResponseEntity
                     .status(201)
-                    .body(studentsList);
-        } catch (Exception e) {
+                    .body(tdService.saveStudents(newStudents));
+        } catch (BadRequestException e) {
             return ResponseEntity
-                    .status(500)
-                    .body("Internal server error: " + e.getMessage());
+                    .status(400)
+                    .body(e.getMessage());
         }
     }
 
-    @GetMapping("/students")
+    @GetMapping(value = "/students", produces = {"application/json", "text/plain"})
     ResponseEntity<?> getStudents(@RequestHeader(required = false) String accept) {
         try {
-            if (accept == null || accept.isEmpty()) {
-                return ResponseEntity
-                        .status(400)
-                        .body("Missing Accept header");
-            }
-
-            if (accept.equals("text/plain") || accept.equals("application/json")) {
-                return ResponseEntity
-                        .status(200)
-                        .body(studentsList);
-            }
+            tdValidator.validateAcceptHeader(accept);
             return ResponseEntity
-                    .status(501)
-                    .body("Invalid Accept header");
-        } catch (Exception e) {
+                    .status(200)
+                    .body(tdService.getStudents());
+        } catch (BadRequestException e) {
             return ResponseEntity
-                    .status(500)
-                    .body("Internal server error: " + e.getMessage());
+                    .status(400)
+                    .body(e.getMessage());
         }
     }
 }
